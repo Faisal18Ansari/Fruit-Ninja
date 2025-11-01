@@ -345,7 +345,7 @@ MonoBehaviour:
   minAngle: -15
   maxAngle: 15
   minForce: 18
-  maxForce: 22
+  maxForce: 23
   maxLifetime: 5
 --- !u!1 &705507993
 GameObject:
