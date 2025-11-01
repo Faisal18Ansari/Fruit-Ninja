@@ -1,9 +1,12 @@
 using System.Collections;
 using UnityEngine;
+
+// Spawner: quietly and reliably spawns fruits and the occasional bomb.
+// It's the invisible carnival operator who keeps the show going.
 [RequireComponent(typeof(Collider))]
 public class Spawner : MonoBehaviour
 {
-    private Collider spawnArea;
+    private Collider spawnArea; // the box or area where spawn positions are chosen
 
     [SerializeField] private GameObject[] fruitPrefabs;
     [SerializeField] private GameObject bombPrefab;
@@ -22,31 +25,37 @@ public class Spawner : MonoBehaviour
 
     private void Awake()
     {
+        // Awake: cache our spawn area so we know where to fling fruit from.
         spawnArea = GetComponent<Collider>();
     }
 
     private void OnEnable()
     {
+        // Start the main spawn coroutine. It's the heart that pumps fruit into the scene.
         StartCoroutine(Spawn());
     }
 
     private void OnDisable()
     {
+        // Stop all coroutines if this thing gets turned off. No more fruit today.
         StopAllCoroutines();
     }
 
     private IEnumerator Spawn()
     {
+        // Give the player a moment to prepare, then begin random chaos.
         yield return new WaitForSeconds(2f);
 
         while (enabled)
         {
+            // Pick a fruit at random (or a bomb, if fate is unkind).
             GameObject prefab = fruitPrefabs[Random.Range(0, fruitPrefabs.Length)];
 
             if (Random.value < bombChance) {
-                prefab = bombPrefab;
+                prefab = bombPrefab; // curveball!
             }
 
+            // Pick a random position inside the spawn area's bounds.
             Vector3 position = new Vector3
             {
                 x = Random.Range(spawnArea.bounds.min.x, spawnArea.bounds.max.x),
@@ -57,11 +66,12 @@ public class Spawner : MonoBehaviour
             Quaternion rotation = Quaternion.Euler(0f, 0f, Random.Range(minAngle, maxAngle));
 
             GameObject fruit = Instantiate(prefab, position, rotation);
-            Destroy(fruit, maxLifetime);
+            Destroy(fruit, maxLifetime); // clean up when it's old and tired
 
             float force = Random.Range(minForce, maxForce);
             fruit.GetComponent<Rigidbody>().AddForce(fruit.transform.up * force, ForceMode.Impulse);
 
+            // Wait a random time before spawning the next fruity tragedy.
             yield return new WaitForSeconds(Random.Range(minSpawnDelay, maxSpawnDelay));
         }
     }

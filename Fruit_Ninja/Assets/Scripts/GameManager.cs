@@ -3,6 +3,8 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 
+// GameManager: the cranky puppet master of the game. Keeps score, restarts the circus,
+// and occasionally loses its temper when you touch a bomb.
 public class GameManager : MonoBehaviour
 {
     public TextMeshProUGUI scoreText;
@@ -12,7 +14,8 @@ public class GameManager : MonoBehaviour
     private Spawner spawner;
     void Start()
     {
-        // Find components first so NewGame() can safely use them
+        // Start: find the important people (objects) so we can boss them around.
+        // If the universe is in a bad mood and can't find them, we'll warn you.
         blade = FindObjectOfType<Blade>();
         spawner = FindObjectOfType<Spawner>();
         NewGame();
@@ -20,6 +23,8 @@ public class GameManager : MonoBehaviour
 
     private void NewGame()
     {
+        // NewGame: reset time, score, and re-enable the people who make the fruit.
+        // It's the 'refresh' button for life, but only for this tiny game world.
         Time.timeScale = 1f;
         score = 0;
         if (scoreText != null)
@@ -29,19 +34,21 @@ public class GameManager : MonoBehaviour
 
         if (blade == null) blade = FindObjectOfType<Blade>();
         if (blade != null)
-            blade.enabled = true;
+            blade.enabled = true; // let the blade do what it does best: slice
         else
             Debug.LogWarning("GameManager: Blade not found in scene.");
 
         if (spawner == null) spawner = FindObjectOfType<Spawner>();
         if (spawner != null)
-            spawner.enabled = true;
+            spawner.enabled = true; // resume spawning chaos
         else
             Debug.LogWarning("GameManager: Spawner not found in scene.");
         ClearScreen();
     }
     private void ClearScreen()
     {
+        // ClearScreen: remove everything that isn't supposed to persist between rounds.
+        // Think of it as the world's tidying-up montage, minus the uplifting music.
         Fruit[] fruits = FindObjectsOfType<Fruit>();
         foreach (Fruit fruit in fruits)
         {
@@ -55,12 +62,16 @@ public class GameManager : MonoBehaviour
     }
     public void IncreaseScore(int amount)
     {
+        // IncreaseScore: called when the player does something worthy of points.
+        // We add the points, update the text, and pretend we didn't just get lucky.
         score += amount;
         if (scoreText != null)
             scoreText.text = "Score: " + score.ToString();
     }
     public void Explode()
     {
+        // Explode: the moment someone touches a bomb and the game throws a tantrum.
+        // We disable controls/spawning, show 'Game Over', and run a little sequence.
         if (blade != null) blade.enabled = false;
         if (spawner != null) spawner.enabled = false;
         if (scoreText != null) scoreText.text += "\nGame Over!";
@@ -70,6 +81,8 @@ public class GameManager : MonoBehaviour
     }
     private IEnumerator ExplodeSequence()
     {
+        // ExplodeSequence: do a quick flash, wait, then reset. It's basically the game's dramatic
+        // sigh followed by a broom-and-mop routine.
         float elapsed = 0f;
         float duration = 0.5f;
         while (elapsed < duration)
