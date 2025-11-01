@@ -4,15 +4,15 @@ public class Blade : MonoBehaviour
 {
     public float sliceForce = 5f;
     public float minSliceVelocity = 0.01f;
-    private Camera camera;
-    private Collider collider;
+    private Camera mainCamera;
+    private Collider bladeCollider;
     private TrailRenderer trail;
     public Vector3 direction { get; private set; }
-    public bool slicing { get; private set; }
+    public bool slicing;
     private void Awake()
     {
-        camera = Camera.main;
-        collider = GetComponent<Collider>();
+        mainCamera = Camera.main;
+        bladeCollider = GetComponent<Collider>();
         trail = GetComponentInChildren<TrailRenderer>();
     }
     private void Update()
@@ -32,13 +32,16 @@ public class Blade : MonoBehaviour
             Touch touch=Input.GetTouch(0);
             switch (touch.phase)
             {
-                case TouchPhase.Begun:
-                    StartSLice();
-                    Break;
+                case TouchPhase.Began:
+                    StartSlice(touch.position);
+                    break;
+                case TouchPhase.Moved:
+                    if (slicing) ContinueSlice(touch.position);
+                    break;
                 case TouchPhase.Ended:
                 case TouchPhase.Canceled:
                     EndSlice();
-                    Break;
+                    break;
             }
         }
 #endif
@@ -46,27 +49,26 @@ public class Blade : MonoBehaviour
 
     private void StartSlice(Vector3 screenPosition)
     {
-        Vector3 position = camera.ScreenToWorldPoint(screenPosition);
+        Vector3 position = mainCamera.ScreenToWorldPoint(screenPosition);
         position.z = 0f;
         transform.position = position;
         slicing = true;
-        collider.enabled = true;
-        trail.Clear();
-        trail.enabled = true;
+        if (bladeCollider != null) bladeCollider.enabled = true;
+        if (trail != null) { trail.Clear(); trail.enabled = true; }
     }
     private void EndSlice()
     {
         slicing = false;
-        collider.enabled = false;
-        trail.enabled = false;
+        if (bladeCollider != null) bladeCollider.enabled = false;
+        if (trail != null) trail.enabled = false;
     }
     private void ContinueSlice(Vector3 screenPosition)
     {
-        Vector3 newPosition = camera.ScreenToWorldPoint(screenPosition);
+        Vector3 newPosition = mainCamera.ScreenToWorldPoint(screenPosition);
         newPosition.z = 0f;
         direction = newPosition - transform.position;
         float velocity = direction.magnitude / Time.deltaTime;
-        collider.enabled = velocity > minSliceVelocity;
+        if (bladeCollider != null) bladeCollider.enabled = velocity > minSliceVelocity;
         transform.position = newPosition;
     }
     private void StartSlice() => StartSlice(Input.mousePosition);
